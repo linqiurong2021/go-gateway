@@ -7,7 +7,6 @@ type AppConfig struct {
 	Release      bool `ini:"release"`
 	Port         uint `ini:"port"`
 	*MySQLConfig `ini:"mysql"`
-	*RedisConfig `ini:"redis"`
 }
 
 // MySQLConfig 数据库配置项
@@ -20,13 +19,6 @@ type MySQLConfig struct {
 	Charset  string `ini:"charset"`
 }
 
-// RedisConfig redis配置文件
-type RedisConfig struct {
-	Host     string `ini:"host"`
-	Port     uint   `ini:"port"`
-	Password string `ini:"password"`
-	Database int    `ini:"database"`
-}
 
 // Conf 配置
 var Conf = new(AppConfig)

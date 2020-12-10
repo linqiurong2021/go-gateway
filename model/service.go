@@ -12,35 +12,10 @@ type Service struct {
 	Alive bool   `gorm:"alive"`
 }
 
-// Create 创建
-func (s *Service) Create(in *Service) {
-
-}
-
-// Update 创建
-func (s *Service) Update(in *Service) {
-
-}
-
-// Delete 创建
-func (s *Service) Delete(in *Service) {
-
-}
-
-// GetByID 通过ID获取
-func (s *Service) GetByID(in *Service) {
-
-}
-
-// GetByURL 通过URL获取
-func (s *Service) GetByURL(in *Service) {
-
-}
-
 // GetAllService 获取所有服务
 func (s *Service) GetAllService() ([]*Service, error) {
 	var services []*Service
-	if err := mysql.DB.Find(&services).Error; err != nil {
+	if err := mysql.DB.Where("alive = ?", 1).Find(&services).Error; err != nil {
 		return nil, err
 	}
 	return services, nil

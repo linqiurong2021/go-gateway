@@ -28,7 +28,7 @@ func (s *Agent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// 搜索
 		if strings.Contains(r.RequestURI, server.URL) {
 			fmt.Printf("Agent:%#v\n", s.server)
-			remote, _ = url.Parse("http://" + server.Host + ":" + server.Port)
+			remote, _ = url.Parse("http://" + server.Host + ":" + server.Port) // 有可能https
 			hasRouter = true
 		}
 	}
@@ -55,7 +55,7 @@ func (s *Agent) Start() {
 	service := &Agent{
 		server: serviceList,
 	}
-	addr := fmt.Sprintf("%d", config.Conf.Port)
+	addr := fmt.Sprintf(":%d", config.Conf.Port)
 	err = http.ListenAndServe(addr, service)
 	if err != nil {
 		log.Fatalln("ListenAndServe: ", err)
