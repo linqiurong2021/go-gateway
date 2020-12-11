@@ -1,6 +1,10 @@
 package config
 
-import "gopkg.in/ini.v1"
+import (
+	"time"
+
+	"gopkg.in/ini.v1"
+)
 
 // AppConfig App配置项
 type AppConfig struct {
@@ -8,6 +12,7 @@ type AppConfig struct {
 	Port            uint `ini:"port"`
 	*MySQLConfig    `ini:"mysql"`
 	*RegisterServer `ini:"register"`
+	*EtcdConfig     `ini:"etcd"`
 }
 
 // MySQLConfig 数据库配置项
@@ -25,6 +30,12 @@ type RegisterServer struct {
 	Host string `ini:"host"`
 	Port uint   `ini:"port"`
 	URL  string `ini:"url"`
+}
+
+// EtcdConfig Etcd集群配置文件
+type EtcdConfig struct {
+	Endpoints   []string      `ini:"endpoints"`
+	DialTimeout time.Duration `ini:"timeout"`
 }
 
 // Conf 配置
