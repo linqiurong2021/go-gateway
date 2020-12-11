@@ -27,11 +27,11 @@ func (s *Agent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, server := range s.server {
 		// 搜索(有可能会有多个 需要负载均衡)
 		if strings.Contains(r.RequestURI, server.URL) {
-			fmt.Printf("Agent:%#v\n", s.server)
+			// fmt.Printf("Agent:%#v\n", s.server)
 			remote, _ = url.Parse("http://" + server.Host + ":" + server.Port) // 有可能https
 			hasRouter = true
 			//
-			return
+			// return
 		}
 	}
 	// 需求判断未找到时提示路由未找到
@@ -52,7 +52,7 @@ func (s *Agent) Start() {
 		fmt.Sprintln(" Error: ", err.Error())
 		return
 	}
-	fmt.Printf("%#v\n", serviceList)
+	// fmt.Printf("%#v\n", serviceList)
 	// 服务列表(需要动态获取)
 	service := &Agent{
 		server: serviceList,

@@ -4,9 +4,10 @@ import "gopkg.in/ini.v1"
 
 // AppConfig App配置项
 type AppConfig struct {
-	Release      bool `ini:"release"`
-	Port         uint `ini:"port"`
-	*MySQLConfig `ini:"mysql"`
+	Release         bool `ini:"release"`
+	Port            uint `ini:"port"`
+	*MySQLConfig    `ini:"mysql"`
+	*RegisterServer `ini:"register"`
 }
 
 // MySQLConfig 数据库配置项
@@ -19,6 +20,12 @@ type MySQLConfig struct {
 	Charset  string `ini:"charset"`
 }
 
+// RegisterServer 注册服务地址
+type RegisterServer struct {
+	Host string `ini:"host"`
+	Port uint   `ini:"port"`
+	URL  string `ini:"url"`
+}
 
 // Conf 配置
 var Conf = new(AppConfig)
