@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,32 +11,41 @@ import (
 	"strings"
 
 	"github.com/linqiurong2021/go-gateway/config"
-	"github.com/linqiurong2021/go-gateway/logic"
-	"github.com/linqiurong2021/go-gateway/model"
+	"github.com/linqiurong2021/go-gateway/etcd"
+	"go.etcd.io/etcd/clientv3"
 )
 
 // Agent 代理服务
 type Agent struct {
-	server []*model.Service // 需要动态添加
+	ProxyConfList []*etcd.EtcdProxyConfItem
+}
+
+// etcdProxyConfChan 配置项通道
+var etcdProxyConfChan chan []*etcd.EtcdProxyConfItem
+
+func (a *Agent) print(config []*etcd.EtcdProxyConfItem) {
+	fmt.Printf("get new Config %#v\n", config)
+	for _, conf := range config {
+		// 搜索(有可能会有多个 需要负载均衡)
+		fmt.Printf("Agent:%#v\n", conf.URL)
+	}
 }
 
 // ServeHTTP 服务代理
-func (s *Agent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	//
+func (a *Agent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var remote *url.URL
 	var hasRouter bool
-	// fmt.Println("ServeHTTP")
-	for _, server := range s.server {
+	go a.GetNewConf(etcdProxyConfChan)
+	for _, conf := range a.ProxyConfList {
 		// 搜索(有可能会有多个 需要负载均衡)
-		if strings.Contains(r.RequestURI, server.URL) {
+		if strings.Contains(r.RequestURI, conf.URL) {
 			// fmt.Printf("Agent:%#v\n", s.server)
-			remote, _ = url.Parse("http://" + server.Host + ":" + server.Port) // 有可能https
+			add := fmt.Sprintf("http://%s:%d", conf.Host, conf.Port)
+			remote, _ = url.Parse(add) // 有可能https
 			hasRouter = true
-			//
-			// return
 		}
 	}
-	// 需求判断未找到时提示路由未找到
+
 	if !hasRouter {
 		fmt.Fprintf(w, "404 Not Found")
 		return
@@ -43,24 +54,58 @@ func (s *Agent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	proxy.ServeHTTP(w, r)
 }
 
-// Start 启动转发
-func (s *Agent) Start() {
-	var serviceLogic = new(logic.Service)
-	// 服务列表(数据库中取出)
-	serviceList, err := serviceLogic.GetAllService()
-	if err != nil {
-		fmt.Sprintln(" Error: ", err.Error())
-		return
-	}
-	// fmt.Printf("%#v\n", serviceList)
-	// 服务列表(需要动态获取)
-	service := &Agent{
-		server: serviceList,
-	}
+// GetProxyConfList 获取代理列表
+func (a *Agent) GetProxyConfList() []*etcd.EtcdProxyConfItem {
+	return etcd.GetProxyConfList(config.Conf.EtcdConfig.Key)
+}
 
+// StartWatch 启动转发
+func (a *Agent) StartWatch() {
+	// 初始化
+	etcd.Init(config.Conf.EtcdConfig)
+	etcdProxyConfChan = make(chan []*etcd.EtcdProxyConfItem, 1)
 	addr := fmt.Sprintf(":%d", config.Conf.Port)
-	err = http.ListenAndServe(addr, service)
+	// 先把默认的给
+	etcdProxyConfChan <- a.GetProxyConfList()
+
+	// 开启监听
+	go a.Watch("/services", etcdProxyConfChan)
+	// 默认先获取一
+	err := http.ListenAndServe(addr, a)
 	if err != nil {
 		log.Fatalln("ListenAndServe: ", err)
+	}
+}
+
+// Watch Watch
+func (a *Agent) Watch(key string, newProxyConfList chan []*etcd.EtcdProxyConfItem) {
+	for true {
+		rch := etcd.EtcdClient.Watch(context.Background(), key)
+		for wresp := range rch {
+			for _, ev := range wresp.Events {
+				fmt.Printf("Type:%s Key:%s Value:%s\n", ev.Type, ev.Kv.Key, ev.Kv.Value)
+				var newConfList []*etcd.EtcdProxyConfItem
+				if ev.Type != clientv3.EventTypeDelete {
+					err := json.Unmarshal(ev.Kv.Value, &newConfList)
+					if err != nil {
+						// fmt.Println("unmarshal new configuration failed,err:", err)
+						return
+					}
+				}
+				// fmt.Printf("Watch: %#v \n\n", newProxyConfList)
+				newProxyConfList <- newConfList
+			}
+		}
+	}
+}
+
+// GetNewConf GetNewConf
+func (a *Agent) GetNewConf(newProxyConfList chan []*etcd.EtcdProxyConfItem) {
+	select {
+	case config := <-newProxyConfList:
+		{
+			fmt.Printf("GetNewConf%#v\n\n", config)
+			a.ProxyConfList = config
+		}
 	}
 }

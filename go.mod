@@ -16,8 +16,10 @@ require (
 	github.com/linqiurong2021/gin-arcgis v0.0.0-20201208013533-edb806a02589
 	go.etcd.io/etcd v3.3.25+incompatible
 	go.uber.org/zap v1.16.0 // indirect
+	golang.org/x/text v0.3.3
 	gopkg.in/ini.v1 v1.62.0
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/gorm v1.20.8
 )
+
 replace google.golang.org/grpc => google.golang.org/grpc v1.26.0
