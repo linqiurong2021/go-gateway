@@ -59,18 +59,16 @@ func (a *Agent) GetProxyConfList() []*etcd.EtcdProxyConfItem {
 	return etcd.GetProxyConfList(config.Conf.EtcdConfig.Key)
 }
 
-// StartWatch 启动转发
-func (a *Agent) StartWatch() {
+// Start 启动转发
+func (a *Agent) Start() {
 	// 初始化
 	etcd.Init(config.Conf.EtcdConfig)
 	etcdProxyConfChan = make(chan []*etcd.EtcdProxyConfItem, 1)
 	addr := fmt.Sprintf(":%d", config.Conf.Port)
 	// 先把默认的给
 	etcdProxyConfChan <- a.GetProxyConfList()
-
 	// 开启监听
 	go a.Watch("/services", etcdProxyConfChan)
-	// 默认先获取一
 	err := http.ListenAndServe(addr, a)
 	if err != nil {
 		log.Fatalln("ListenAndServe: ", err)

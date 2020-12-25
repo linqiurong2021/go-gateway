@@ -30,10 +30,10 @@ func TestEtcdPutServices(t *testing.T) {
 	etcd.Init(config.Conf.EtcdConfig)
 
 	services := &etcd.EtcdProxyConf{
-		{ID: 1, Name: "测试", Port: 8899, Alive: true, Host: "127.0.0.1", URL: "/service/register"},
-		{ID: 2, Name: "测试", Port: 8899, Alive: true, Host: "127.0.0.1", URL: "/service/unregister"},
-		{ID: 3, Name: "测试", Port: 8899, Alive: true, Host: "127.0.0.1", URL: "/api/service"},
-		{ID: 4, Name: "测试", Port: 8899, Alive: true, Host: "127.0.0.1", URL: "/api2/service"},
+		{ID: "1", Name: "测试", Port: 8899, Alive: true, Host: "127.0.0.1", URL: "/service/register"},
+		{ID: "2", Name: "测试", Port: 8899, Alive: true, Host: "127.0.0.1", URL: "/service/unregister"},
+		{ID: "3", Name: "测试", Port: 8899, Alive: true, Host: "127.0.0.1", URL: "/api/service"},
+		{ID: "4", Name: "测试", Port: 8899, Alive: true, Host: "127.0.0.1", URL: "/api2/service"},
 	}
 
 	bytes, err := json.Marshal(services)
@@ -73,7 +73,7 @@ func TestEtcdPut(t *testing.T) {
 func TestEtcdGet(t *testing.T) {
 
 	if err := config.Init("config.ini"); err != nil {
-		fmt.Printf("load config from file falure !, err:%v\n", err)
+		fmt.Printf("load config from file falure 222!, err:%v\n", err)
 		return
 	}
 	etcd.Init(config.Conf.EtcdConfig)
@@ -101,7 +101,7 @@ func TestEtcdClear(t *testing.T) {
 	//
 	resp, err := etcd.Delete("/services")
 	if err != nil {
-		fmt.Println("etcd set failure , err 22 : ", err.Error())
+		fmt.Println("etcd set failure , err 3333 : ", err.Error())
 		return
 	}
 	fmt.Printf("%v", resp)

@@ -15,7 +15,7 @@ type EtcdProxyConf []*EtcdProxyConfItem
 
 // EtcdProxyConfItem 配置项
 type EtcdProxyConfItem struct {
-	ID    uint   `gorm:"id;primaryKey"`
+	ID    string `gorm:"id;primaryKey"`
 	Host  string `gorm:"host"`
 	Port  uint   `gorm:"port"`
 	URL   string `gorm:"url"`

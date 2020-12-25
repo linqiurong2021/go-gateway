@@ -15,6 +15,6 @@ func main() {
 	}
 
 	// 实例化agent并启用
-	// new(agent.Agent).Start()
-	new(agent.Agent).StartWatch()
+	new(agent.Agent).Start()
+
 }
